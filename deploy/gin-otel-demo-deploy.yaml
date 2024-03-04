@@ -54,6 +54,8 @@ spec:
               value: "tempo.monitoring:4318"
             - name: OTEL_SERVICE_NAME
               value: "gin-otel-demo"
+            - name: OTEL_GO_AUTO_SHOW_VERIFIER_LOG
+              value: true
           securityContext:
             runAsUser: 0
             privileged: true
