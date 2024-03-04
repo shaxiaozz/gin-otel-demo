@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gin-otel-demo
+  labels:
+    app: gin-otel-demo
+spec:
+  selector:
+    matchLabels:
+      app: gin-otel-demo
+  template:
+    metadata:
+      name: gin-otel-demo
+      labels:
+        app: gin-otel-demo
+    spec:
+      volumes:
+        - name: time
+          hostPath:
+            path: /etc/localtime
+      containers:
+        - name: gin-otel-demo
+          image: gin-otel-demo:latest
+          env:
+          - name: MYSQL_USERNAME
+            value: "root"
+          - name: MYSQL_PASSWORD
+            value: "MK5i^6@S1d"
+          - name: MYSQL_HOST
+            value: "10.82.69.76:3306"
+          - name: MYSQL_DB_NAME
+            value: "gin-otel-demo"
+          - name: REDIS_MODEL
+            value: "standalone"
+          - name: REDIS_HOST
+            value: "10.82.69.69:6379"
+          - name: REDIS_PASSWORD
+            value: "d8m413WGF9CV"
+          ports:
+          - containerPort: 9090 # 容器端口
+          volumeMounts:
+          - name: time
+            readOnly: true
+            mountPath: /etc/localtime
+        - name: autoinstrumentation-go
+          image: otel/autoinstrumentation-go:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: OTEL_GO_AUTO_TARGET_EXE
+              value: "/gin-otel-demo"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "tempo.monitoring:4318"
+            - name: OTEL_SERVICE_NAME
+              value: "gin-otel-demo"
+          securityContext:
+            runAsUser: 0
+            privileged: true
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gin-otel-demo
+spec:
+  type: NodePort
+  ports:
+    - port: 9090 # 服务端口
+  selector:
+    app: gin-otel-demo
