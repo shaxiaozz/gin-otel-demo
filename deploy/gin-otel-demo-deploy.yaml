@@ -21,6 +21,7 @@ spec:
       containers:
         - name: gin-otel-demo
           image: gin-otel-demo:latest
+          imagePullPolicy: IfNotPresent
           env:
           - name: MYSQL_USERNAME
             value: "root"
