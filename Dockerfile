@@ -7,7 +7,7 @@ COPY ./go.mod ./
 COPY ./go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o infra-ops
+RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o gin-otel-demo
 
 FROM alpine:3.12 as runner
 COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
