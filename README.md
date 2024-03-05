@@ -1,1 +1,0 @@
-# gin-otel-demo
