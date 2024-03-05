@@ -6,7 +6,8 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	mysql_logger "gorm.io/gorm/logger"
-	"log"
+	"gorm.io/plugin/opentelemetry/logging/logrus"
+	"gorm.io/plugin/opentelemetry/tracing"
 	"os"
 	"time"
 )
@@ -26,7 +27,7 @@ func InitMysql() {
 
 	// 日志配置（打印慢 SQL 和错误）
 	newLogger := mysql_logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
+		logrus.NewWriter(),
 		mysql_logger.Config{
 			SlowThreshold:             time.Second,         // 慢 SQL 阈值
 			LogLevel:                  mysql_logger.Silent, // 日志级别
@@ -60,6 +61,11 @@ func InitMysql() {
 	GORM, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: newLogger})
 	if err != nil {
 		panic("MySQL数据库连接失败: " + err.Error())
+	}
+
+	// 设置跟踪和指标
+	if err := GORM.Use(tracing.NewPlugin()); err != nil {
+		panic("MySQL数据库设置OTEL追踪失败: " + err.Error())
 	}
 
 	// 数据库连接池配置
