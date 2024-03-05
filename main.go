@@ -18,6 +18,7 @@ func main() {
 	if shutdown := trace.Trace.RetryInitTracer(); shutdown != nil {
 		defer shutdown()
 	}
+
 	r := gin.Default()
 	r.Use(otelgin.Middleware("gin-otel-demo")) // 注入 OpenTelemetry 中间件
 	controller.Router.InitApiRouter(r)         // 跨包调用router的初始化方法

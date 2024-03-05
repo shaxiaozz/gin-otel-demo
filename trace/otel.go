@@ -2,6 +2,7 @@ package trace
 
 import (
 	"context"
+	"github.com/wonderivan/logger"
 	"os"
 	"time"
 
@@ -40,6 +41,7 @@ func (t *trace) RetryInitTracer() func() {
 }
 
 func (t *trace) InitTracer() func() {
+	logger.Info("start otel tracing")
 	// temporarily set timeout to 10s
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -51,11 +53,10 @@ func (t *trace) InitTracer() func() {
 	}
 	otelAgentAddr, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	if !ok {
-		otelAgentAddr = "tempo.monitoring:4317"
+		otelAgentAddr = "http://192.168.56.101:31634"
 		os.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", otelAgentAddr)
 	}
 	zap.S().Infof("OTLP Trace connect to: %s with service name: %s", otelAgentAddr, serviceName)
-
 	traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(), otlptracegrpc.WithDialOption(grpc.WithBlock()))
 	if err != nil {
 		t.HandleErr(err, "OTLP Trace gRPC Creation")
